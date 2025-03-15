@@ -1,6 +1,8 @@
 {
-    "name": "Lovelace Card Templater",
-    "render_readme": true,
-    "domains": ["lovelace"]
-  }
-  
+  "name": "Lovelace Card Templater 2.0",
+  "render_readme": true,
+  "domains": ["lovelace"],
+  "documentation": "https://github.com/tecnoyfoto/lovelace-card-templater-2#readme",
+  "issue_tracker": "https://github.com/tecnoyfoto/lovelace-card-templater-2/issues",
+  "version": "2.0.0"
+}
