@@ -1,185 +1,81 @@
-# lovelace-card-templater
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
+# Lovelace Card Templater 2.0
 
-Custom Lovelace card which allows Jinja2 templates to be applied to other cards
 
-## Installation
+**Lovelace Card Templater 2.0** es un fork del proyecto original de Steven Rollason que permite aplicar plantillas Jinja2 a otras tarjetas de Lovelace en Home Assistant. Esta versión se ha actualizado para ser compatible con las versiones más recientes de Home Assistant, utilizando Webpack 5 y Babel para transpilar el código moderno.
 
-This card can either be installed using [HACS](https://github.com/hacs/integration) or manually.
+Esta tarjeta te permite modificar dinámicamente propiedades de otras tarjetas (como nombre, icono, estado, etc.) basadas en la información de entidades o atributos, facilitando la personalización y actualización de la interfaz.
 
-### With HACS
-Search for "Lovelace Card Templater" in the store and follow the instructions
+## Características
+Compatibilidad actualizada: Migrada a Webpack 5 y Babel, asegurando compatibilidad con las últimas versiones de Home Assistant.
+Templating dinámico: Permite modificar propiedades de las tarjetas usando plantillas Jinja2.
+Soporte para listas y objetos: Templating de propiedades que son listas o que requieren transformación.
+Integración con HACS: Instalable directamente desde HACS.
 
-### Manually
+## Instalación vía HACS
+En Home Assistant, ve a HACS > Integraciones (o Frontend para tarjetas Lovelace).
+Abre el menú (los tres puntos) y selecciona Custom repositories.
+Añade la URL de este repositorio:
 
-Download the lovelace-text-input-row.js and put it somewhere under *config folder*/www
+https://github.com/tecnoyfoto/lovelace-card-templater
+Selecciona la categoría Lovelace.
+Una vez agregado, busca Lovelace Card Templater 2.0 en HACS y haz clic en Install.
+Reinicia Home Assistant si es necesario.
 
-    resources:
-      - url: local/path/to/file/lovelace-card-templater.js?v=0.0.2
-        type: js
+## Uso
+Una vez instalada, podrás utilizar la tarjeta en tus dashboards de Lovelace. Por ejemplo, para crear una tarjeta que muestre imágenes basadas en el valor de un sensor, podrías usar:
 
-## Options
+``` type: custom:card-templater
+card:
+  type: picture-entity
+  entity: sensor.envases_days
+  name_template: '{{ states.sensor.envases_days.state }} days'
+  show_name: true
+  show_state: false
+  state_image:
+    '0': /local/contenedores/envases.jpg
+    '1': /local/contenedores/envases-1.jpg
+    '2': /local/contenedores/envases-2.jpg
+entities:
+  - sensor.envases_days
+  ```
 
-| Name     | Type   | Optional/Required | Description                                                                           |
-|----------|--------|-------------------|---------------------------------------------------------------------------------------|
-| type     | string | Required          | custom:card-templater                                                                 |
-| card     | object | Required          | The card to display (see below about templating)                                      |
-| entities | list   | Required          | Entities to watch for changes (can also be used to template entity states, see below) |
+Nota: Se recomienda crear sensores template que extraigan el valor numérico (0, 1, 2) a partir de atributos de tus sensores originales, de modo que la tarjeta pueda usar ese valor para seleccionar la imagen correcta. Consulta la documentación de Home Assistant sobre sensores template para más detalles.
 
-### Card templating
+## Ejemplo avanzado de templating
+Puedes modificar cualquier propiedad que acepte cadenas en la tarjeta cambiando su nombre a *_template. Por ejemplo, en un card tipo entities:
 
-The **card** option will accept any card configration. Any option in the original card which takes a string value can be templated by changing the option name to be ***option\_name*\_template**. For example, **name** will become **name_template**. Here is an example:
 
-    type: 'custom:card-templater'
-    card:
-      type: entities
-      show_header_toggle: false
-      columns: 2
-      title: Places
-      entities:
-        - entity: zone.home
-          name_template: >-
-            {{ state_attr("zone.home","friendly_name") }} - {{
-            (distance(states.device_tracker.my_phone, states.zone.home) *
-            0.621371) | round(1) }} miles.
-        - entity: zone.work
-          name_template: >-
-            {{ state_attr("zone.work","friendly_name") }} - {{
-            (distance(states.device_tracker.my_phone, states.zone.work) *
-            0.621371) | round(1) }} miles.
-    entities:
-      - device_tracker.my_phone
+``` type: custom:card-templater
+card:
+  type: entities
+  show_header_toggle: false
+  title: Lugares
+  entities:
+    - entity: zone.home
+      name_template: >
+        {{ state_attr("zone.home", "friendly_name") }} - {{
+        (distance(states.device_tracker.my_phone, states.zone.home) * 0.621371) | round(1)
+        }} miles
+    - entity: zone.work
+      name_template: >
+        {{ state_attr("zone.work", "friendly_name") }} - {{
+        (distance(states.device_tracker.my_phone, states.zone.work) * 0.621371) | round(1)
+        }} miles
+entities:
+  - device_tracker.my_phone
+ ``` 
 
-This will display an **entities** card showing two zones, with the display names including the distance between a device_tracker entity and the zone lke this:
+## Variables disponibles en las plantillas
 
-![entities](https://user-images.githubusercontent.com/2099542/57008002-cac2f280-6be4-11e9-8f86-061f781c470f.PNG)
+user: Información del usuario actual (user.name, user.is_admin, etc.).
+page: Objeto location del navegador (ejemplo: page.pathname, page.href, etc.).
+theme: El nombre del tema actual.
 
-#### Templating lists
+## Licencia y Créditos
+Licencia: MIT (se debe incluir el aviso original del autor).
+Autor original: Steven Rollason.
+Mantenido por: Albert Barnosell
+Canal de YouTube: Tecnoyfoto
 
-Some card options can be a list of strings (e.g. the **state_filter** option in the **entity-filter** card). These can still be templated, but need to be done in a different way, by replacing each string with ```string_template: {{ template }}``` as below:
-
-    state_filter:
-      - 'state_one'
-      - 'state_two'
-
-could become
-
-    state_filter:
-      - string_template: {{ "state_" + "one" }}
-      - string_template: {{ "state_" + "two" }}
-
-#### Templating lists, alternative experimental method (since version 0.0.3)
-
-Version 0.0.3 introduced another way of templating list-based properties. These can now be templated via a template which returns valid YAML or JSON, such as this:
-
-    type: 'custom:card-templater'
-    card:
-      type: entities
-      title: Who's at Home
-      entities_template: >-
-        {{ states.device_tracker | selectattr("state", "equalto",
-        "home") | map(attribute="entity_id") | list | tojson }}
-    entities:
-      - sensor.time
-
-#### Notes:
-
-It is technically possible to template the card type of the templated_card, e.g. something like this:
-
-    type_template: '{{ "entities" if is_state("input_boolean.show_full", "on").state else "glance" }}
-
-However, this has only been tested with the **entities** and **glance** cards and may not work reliably with other card types.
-
-### entities
-
-This option is required in order that the template will only be processed when one of the referenced entities changes and is similar to the **entity** option for template sensors. I am investigating if this can be determined from the template but this is difficult to do client-side and so, for now, this option is required.
-
-For complex templates you can create a time sensor like this:
-
-    sensor:
-      - platform: time_date
-        display_options:
-          - 'time'
-
-and then use sensor.time under **entities**
-
-You can also use this to template the state for an entity, so the entity displays other than its actual state. For example:
-
-    type: 'custom:card-templater'
-    card:
-      type: entities
-      show_header_toggle: false
-      columns: 2
-      title: Places
-      entities:
-        - entity: zone.home
-          name_template: >-
-            {{ (distance(states.device_tracker.my_phone, states.zone.home) * 0.621371) | round(1) }} miles away.
-        - entity: zone.work
-          name_template: >-
-            {{(distance(states.device_tracker.my_phone, states.zone.work) * 0.621371) | round(1) }} miles away.
-    entities: 
-      - device_tracker.my_phone
-      - entity: zone.home
-        state_template: '{{ state_attr("zone.home","friendly_name") }}'
-      - entity: zone.work
-        state_template: '{{ state_attr("zone.work","friendly_name") }}'
-    entity: zone.work
-
-will display the states of the zones as their friendly names instead of the actual state of ("zoning") as below:
-
-![StateTemplate](https://user-images.githubusercontent.com/2099542/57028392-e656e900-6c36-11e9-8094-96ff122bb54d.png)
-
-Attributes of entities can also be templated like this:
-
-    type: 'custom:card-templater'
-    card:
-      ...
-    entities:
-      - entity: sensor.my_sensor
-        state_template: >
-           {{ "One" if states.sensor.my_sensor.state == "1" else "Not One" }}
-        attributes:
-          unit_of_measurement_template: >
-            {{ states.sensor.my_sensor_uom.state }}
-             
-This can be done with or without the **state_template** being defined, so you can do this:
-
-    type: 'custom:card-templater'
-    card:
-      ...
-    entities:
-      - entity: sensor.my_sensor
-        attributes:
-         unit_of_measurement_template: >
-           {{ states.sensor.my_sensor_uom.state }}
-
-### Excluding a property with a name ending with \_template property from being templated
-
-Sometimes you may want to template a card which takes properties ending with \_template (e.g. the **content_template** option in [lovelace-home-feed-card](https://github.com/gadgetchnnel/lovelace-home-feed-card)) and you don't want these to be handled by card-templater. This can be done by adding  **!**  to the end of the property (e.g. `content_template!: {{state}}`).
-
-### Variables
-
-The following variables are passed to the templating engine so you can use them in the templates
-
-* user.name - the name of the current user
-* user.is_admin - whether the current user is an admin
-* user.is_owner - whether the current user is the owner
-* page - this is the Javascript **location** object for the current page and so can be used as follows:
-  * page.pathname - the path name of the current page (e.g. /lovelace/home)
-  * page.href - the full url of the current page
-  * page.protocol - the protocol (http/https) of the current page
-  * page.host - the hostname of the current page
-* page.path - this is an alias for page.pathname above for backwards compatibility
-* theme - the name of the currently selected theme
-
-#### Example
-
-    type: 'custom:card-templater'
-    card:
-      type: markdown
-      content_template: >
-        ## Hello {{ user.name }}
-        This card is on the page {{ page.path }}
-    entities:
-      - entity: sensor.time
+## Contribuciones
+¡Se agradecen las contribuciones y comentarios! Si encuentras algún error o tienes sugerencias para futuras mejoras, abre un issue o un pull request en este repositorio.

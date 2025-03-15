@@ -1,4 +1,6 @@
 {
     "name": "Lovelace Card Templater",
-    "render_readme": true
-}
+    "render_readme": true,
+    "domains": ["lovelace"]
+  }
+  
