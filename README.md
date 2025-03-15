@@ -16,7 +16,8 @@ En Home Assistant, ve a HACS > Integraciones (o Frontend para tarjetas Lovelace)
 Abre el menú (los tres puntos) y selecciona Custom repositories.
 Añade la URL de este repositorio:
 
-https://github.com/tecnoyfoto/lovelace-card-templater
+https://github.com/tecnoyfoto/lovelace-card-templater-2
+
 Selecciona la categoría Lovelace.
 Una vez agregado, busca Lovelace Card Templater 2.0 en HACS y haz clic en Install.
 Reinicia Home Assistant si es necesario.
